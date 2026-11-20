@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Design tokens. Tune the whole look from here.
+   --glass-blur        how strongly the background is blurred behind panels
+   --glass-bg          panel tint and transparency (raise the alpha for more solid panels)
+   --radius-card       corner radius of cards
+   ------------------------------------------------------------------ */
+@theme {
+  --color-accent: #007aff;
+  --color-accent-strong: #0062cc;
+  --color-sys-green: #34c759;
+  --color-sys-orange: #ff9500;
+  --color-sys-red: #ff3b30;
+  --color-sys-purple: #af52de;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --glass-blur: 24px;
+  --glass-saturate: 170%;
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-bg-strong: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-highlight: rgba(255, 255, 255, 0.95);
+  --glass-shadow: rgba(40, 50, 90, 0.2);
+  --glass-solid: #ffffff;
+  --radius-card: 28px;
+
+  --tick: #6b7280;
+  --grid: rgba(60, 60, 67, 0.14);
+  --tooltip-bg: rgba(255, 255, 255, 0.92);
+  --tooltip-text: #0f172a;
+  --blob-opacity: 0.55;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --glass-bg: rgba(34, 36, 48, 0.55);
+    --glass-bg-strong: rgba(30, 32, 44, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-highlight: rgba(255, 255, 255, 0.16);
+    --glass-shadow: rgba(0, 0, 0, 0.55);
+    --glass-solid: #1c1c24;
+    --tick: #a1a1aa;
+    --grid: rgba(255, 255, 255, 0.12);
+    --tooltip-bg: rgba(28, 28, 36, 0.92);
+    --tooltip-text: #e5e7eb;
+    --blob-opacity: 0.38;
+  }
+}
+
+html { color-scheme: light dark; scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+body { font-family: var(--font-sans); letter-spacing: -0.011em; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 0.75rem; }
+
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-card);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 2px rgba(0, 0, 0, 0.04), 0 18px 40px -16px var(--glass-shadow);
+  }
+  .glass-strong {
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(190%);
+    backdrop-filter: blur(calc(var(--glass-blur) * 1.4)) saturate(190%);
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 30px -8px var(--glass-shadow);
+  }
+  .glass-lift { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s; }
+  .glass-lift:hover { transform: translateY(-2px); }
+}
+
+/* browsers without backdrop-filter, or people who asked for less transparency: solid panels */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass, .glass-strong { background: var(--glass-solid); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .glass, .glass-strong { background: var(--glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* soft colour field that gives the glass something to blur. Only transforms are animated (cheap on the GPU). */
+.aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.aurora i {
+  position: absolute; width: 62vmax; height: 62vmax; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, var(--c) 0%, transparent 66%);
+  opacity: var(--blob-opacity); will-change: transform;
+  animation: drift 30s ease-in-out infinite alternate;
+}
+.aurora i:nth-child(1) { --c: #64d2ff; top: -22vmax; left: -18vmax; }
+.aurora i:nth-child(2) { --c: #bf5af2; top: 6vmax; right: -24vmax; animation-duration: 36s; animation-delay: -9s; }
+.aurora i:nth-child(3) { --c: #ff9f0a; bottom: -30vmax; left: 8vmax; animation-duration: 42s; animation-delay: -4s; opacity: calc(var(--blob-opacity) * 0.6); }
+.aurora i:nth-child(4) { --c: #30d158; bottom: -22vmax; right: -10vmax; animation-duration: 38s; animation-delay: -14s; opacity: calc(var(--blob-opacity) * 0.45); }
+@keyframes drift { to { transform: translate3d(7vmax, 5vmax, 0) scale(1.14); } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .aurora i { animation: none; }
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
